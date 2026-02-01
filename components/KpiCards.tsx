@@ -13,9 +13,16 @@ type KpiCardsProps = {
 
 export function KpiCards({ kpis, enoughNumber, inputs }: KpiCardsProps) {
   const coastNumberNow = getSecurityNumberAtYear(inputs, 1);
+  
+  // Calculate retirement values in today's dollars
+  const yearsToRetirement = inputs.yearsUntilRetirement;
+  const inflationAdjustment = Math.pow(1 + inputs.inflation, yearsToRetirement);
+  const retirementNetWorthToday = kpis.retirementNetWorth !== null 
+    ? kpis.retirementNetWorth / inflationAdjustment 
+    : null;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
       <div className="card px-4 py-3">
         <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
           <span>Years to Coast</span>
@@ -37,6 +44,16 @@ export function KpiCards({ kpis, enoughNumber, inputs }: KpiCardsProps) {
           {kpis.yearsToEnough ?? "—"}
         </p>
         <p className="mt-1 text-[11px] text-slate-500">Target: {formatCurrency(enoughNumber)}</p>
+      </div>
+      <div className="card px-4 py-3">
+        <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <span>Retirement Net Worth</span>
+          <InfoTooltip text="Your total net worth at retirement age, adjusted to today's dollars." />
+        </p>
+        <p className="mt-1 text-xl font-semibold text-slate-900">
+          {retirementNetWorthToday !== null ? formatCurrency(retirementNetWorthToday) : "—"}
+        </p>
+        <p className="mt-1 text-[11px] text-slate-500">In today's dollars</p>
       </div>
       <div className="card px-4 py-3">
         <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
