@@ -21,16 +21,16 @@ export function InfoTooltip({ text }: InfoTooltipProps) {
     if (!trigger || !tooltip) return;
 
     const sidebar = trigger.closest("[data-sidebar]") as HTMLElement | null;
-    if (!sidebar) return;
+    const container = sidebar || document.body;
 
     const triggerRect = trigger.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
-    const sidebarRect = sidebar.getBoundingClientRect();
+    const containerRect = sidebar ? sidebar.getBoundingClientRect() : { left: 0, right: window.innerWidth };
     const padding = 8;
     const viewportLeft = padding;
     const viewportRight = window.innerWidth - padding;
-    const containerLeft = Math.max(sidebarRect.left + padding, viewportLeft);
-    const containerRight = Math.min(sidebarRect.right - padding, viewportRight);
+    const containerLeft = Math.max(containerRect.left + padding, viewportLeft);
+    const containerRight = Math.min(containerRect.right - padding, viewportRight);
     const desiredLeft = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
     const minLeft = containerLeft;
     const maxLeft = containerRight - tooltipRect.width;

@@ -56,80 +56,76 @@ export function Sidebar({
       </div>
 
       <div className="card">
-        <div className="space-y-4 px-5 py-5">
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Current Annual Income</span>
-                <InfoTooltip text="Your current yearly take-home income (after taxes), before any changes." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.currentYearIncome}
-                step={10000}
-                onChange={(value) => onUpdateInputs({ ...inputs, currentYearIncome: value })}
-              />
-            </div>
+        <div className="space-y-5 px-5 py-5">
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Current Annual Income</span>
+              <InfoTooltip text="Your current yearly take-home income (after taxes), before any changes." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.currentYearIncome}
+              step={10000}
+              onChange={(value) => onUpdateInputs({ ...inputs, currentYearIncome: value })}
+            />
           </div>
 
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Total Net Worth</span>
-                <InfoTooltip text="Total value of all assets minus debts, including your home and retirement accounts." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.startingTotalNW}
-                step={10000}
-                onChange={(value) => onUpdateInputs({ ...inputs, startingTotalNW: value })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Accessible Net Worth</span>
+              <InfoTooltip text="Assets you can use before retirement, like cash, stocks, bonds, and crypto (excluding restricted accounts)." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.startingAccessibleNW}
+              step={10000}
+              onChange={(value) => onUpdateInputs({ ...inputs, startingAccessibleNW: value })}
+            />
           </div>
 
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Accessible Net Worth</span>
-                <InfoTooltip text="Assets you can use before retirement, like cash, stocks, bonds, and crypto (excluding restricted accounts)." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.startingAccessibleNW}
-                step={10000}
-                onChange={(value) => onUpdateInputs({ ...inputs, startingAccessibleNW: value })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Restricted Net Worth</span>
+              <InfoTooltip text="Assets locked until retirement, like 401(k), IRA, and home equity." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.startingTotalNW - inputs.startingAccessibleNW}
+              step={10000}
+              onChange={(value) => onUpdateInputs({ 
+                ...inputs, 
+                startingTotalNW: inputs.startingAccessibleNW + value 
+              })}
+            />
+            <p className="text-xs text-slate-500">
+              Total Net Worth: ${(inputs.startingTotalNW).toLocaleString()}
+            </p>
           </div>
 
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Years Until Retirement</span>
-                <InfoTooltip text="Years until your retirement accounts can be accessed." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.yearsUntilRetirement}
-                min={1}
-                onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Years Until Retirement</span>
+              <InfoTooltip text="Years until your retirement accounts can be accessed." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.yearsUntilRetirement}
+              min={1}
+              onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
+            />
           </div>
 
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Retirement Spending</span>
-                <InfoTooltip text="Enter this in today's dollars; inflation is handled via the real return used in the retirement calculations." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.retirementSpending}
-                step={10000}
-                onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Retirement Spending</span>
+              <InfoTooltip text="Enter this in today's dollars; inflation is handled via the real return used in the retirement calculations." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.retirementSpending}
+              step={10000}
+              onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
+            />
           </div>
 
           <PercentInput
@@ -145,13 +141,6 @@ export function Sidebar({
             onChange={(value) => onUpdateInputs({ ...inputs, inflation: value })}
           />
           <PercentInput
-            label="Fees"
-            tooltip="Annual portfolio fees that reduce returns."
-            value={inputs.fees}
-            onChange={(value) => onUpdateInputs({ ...inputs, fees: value })}
-            max={0.05}
-          />
-          <PercentInput
             label="Safe Withdrawal Rate"
             tooltip="Percent of your portfolio you plan to withdraw each year in retirement."
             value={inputs.safeWithdrawalRate}
@@ -165,19 +154,17 @@ export function Sidebar({
             onChange={(value) => onUpdateInputs({ ...inputs, restrictedSavingsRate: value })}
             max={0.5}
           />
-          <div className="grid gap-3">
-            <div>
-              <label className="label flex items-center gap-2">
-                <span>Projection Years</span>
-                <InfoTooltip text="How many years the model projects into the future." />
-              </label>
-              <NumberInput
-                className="input"
-                value={inputs.projectionYears}
-                min={1}
-                onChange={(value) => onUpdateInputs({ ...inputs, projectionYears: value })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Projection Years</span>
+              <InfoTooltip text="How many years the model projects into the future." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.projectionYears}
+              min={1}
+              onChange={(value) => onUpdateInputs({ ...inputs, projectionYears: value })}
+            />
           </div>
 
           <button className="button w-full" onClick={onReset}>
