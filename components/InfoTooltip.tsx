@@ -1,31 +1,88 @@
-"use client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
-interface InfoTooltipProps {
-  content: string;
-}
+type InfoTooltipProps = {
+  text: string;
+};
 
-export function InfoTooltip({ content }: InfoTooltipProps) {
+export function InfoTooltip({ text }: InfoTooltipProps) {
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [tooltipStyles, setTooltipStyles] = useState<{
+    left: number;
+    top: number;
+    maxWidth: number;
+  } | null>(null);
+
+  const updateShift = useCallback(() => {
+    const trigger = triggerRef.current;
+    const tooltip = tooltipRef.current;
+    if (!trigger || !tooltip) return;
+
+    const sidebar = trigger.closest("[data-sidebar]") as HTMLElement | null;
+    if (!sidebar) return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const padding = 8;
+    const viewportLeft = padding;
+    const viewportRight = window.innerWidth - padding;
+    const containerLeft = Math.max(sidebarRect.left + padding, viewportLeft);
+    const containerRight = Math.min(sidebarRect.right - padding, viewportRight);
+    const desiredLeft = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+    const minLeft = containerLeft;
+    const maxLeft = containerRight - tooltipRect.width;
+    const clampedLeft = Math.min(Math.max(desiredLeft, minLeft), maxLeft);
+    const nextMaxWidth = Math.max(0, Math.round(containerRight - containerLeft));
+    setTooltipStyles({
+      left: Math.round(clampedLeft),
+      top: Math.round(triggerRect.bottom + padding),
+      maxWidth: Number.isFinite(nextMaxWidth) ? nextMaxWidth : 0
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handle = () => updateShift();
+    handle();
+    window.addEventListener("resize", handle);
+    window.addEventListener("scroll", handle, true);
+    return () => {
+      window.removeEventListener("resize", handle);
+      window.removeEventListener("scroll", handle, true);
+    };
+  }, [isOpen, updateShift]);
+
   return (
-    <div className="group relative inline-block">
-      <svg
-        className="h-4 w-4 text-slate-400 hover:text-slate-600"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
+    <span className="relative inline-flex items-center">
+      <span
+        ref={triggerRef}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-semibold lowercase text-slate-500"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-      <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden w-64 -translate-x-1/2 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600 shadow-lg group-hover:block">
-        {content}
-        <div className="absolute left-1/2 top-full -translate-x-1/2">
-          <div className="border-4 border-transparent border-t-white"></div>
-        </div>
-      </div>
-    </div>
+        i
+      </span>
+      {isOpen &&
+        createPortal(
+          <span
+            ref={tooltipRef}
+            className="pointer-events-none fixed z-[999] w-56 whitespace-normal rounded-md bg-slate-900 px-3 py-2 text-xs font-normal text-white shadow-lg"
+            style={{
+              left: tooltipStyles?.left ?? 0,
+              top: tooltipStyles?.top ?? 0,
+              maxWidth: tooltipStyles ? `${tooltipStyles.maxWidth}px` : undefined,
+              opacity: tooltipStyles ? 1 : 0
+            }}
+          >
+            {text}
+          </span>,
+          document.body
+        )}
+    </span>
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
 import { useId } from "react";
+import { InfoTooltip } from "./InfoTooltip";
 
 type PercentInputProps = {
   label: string;
+  tooltip?: string;
   value: number;
   onChange: (value: number) => void;
   min?: number;
@@ -13,6 +15,7 @@ type PercentInputProps = {
 
 export function PercentInput({
   label,
+  tooltip,
   value,
   onChange,
   min = 0,
@@ -29,8 +32,9 @@ export function PercentInput({
 
   return (
     <div className="space-y-2">
-      <label className="label" htmlFor={id}>
-        {label}
+      <label className="label flex items-center gap-2" htmlFor={id}>
+        <span>{label}</span>
+        {tooltip ? <InfoTooltip text={tooltip} /> : null}
       </label>
       <div className="flex items-center gap-3">
         <input

@@ -1,8 +1,8 @@
 "use client";
 
-import { CurrencyInput } from "./CurrencyInput";
 import { PercentInput } from "./PercentInput";
 import { NumberInput } from "./NumberInput";
+import { InfoTooltip } from "./InfoTooltip";
 import type { GlobalInputs } from "@/lib/model";
 
 type SidebarProps = {
@@ -21,110 +21,170 @@ export function Sidebar({
   onReset
 }: SidebarProps) {
   return (
-    <aside className="flex h-full flex-col gap-6 overflow-y-auto bg-white px-5 py-6 shadow-lg md:shadow-none">
-      <div className="flex items-center justify-between">
+    <aside
+      className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-white px-5 py-6"
+      data-sidebar
+    >
+      <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Calculator</p>
-          <h1 className="text-2xl font-semibold text-slate-900">Your Inputs</h1>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
+            Spill the Tea
+          </h2>
+          <p className="text-sm text-slate-500">
+            Your financial situation, the base inputs that drive the projections.
+          </p>
         </div>
         <button
-          className="rounded-md border border-slate-200 bg-white px-2 py-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 md:hidden"
+          className="rounded-md border border-slate-200 bg-white px-2 py-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
           onClick={onToggleOpen}
-          aria-label="Close sidebar"
+          aria-label="Toggle sidebar"
         >
-          <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
+          <span className="sr-only">{isOpen ? "Collapse sidebar" : "Open sidebar"}</span>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            className={`h-4 w-4 transition-transform ${isOpen ? "rotate-0" : "rotate-180"}`}
+            fill="currentColor"
+          >
             <path
-              d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
+              fillRule="evenodd"
+              d="M12.78 4.22a.75.75 0 0 1 0 1.06L8.56 9.5l4.22 4.22a.75.75 0 1 1-1.06 1.06l-4.75-4.75a.75.75 0 0 1 0-1.06l4.75-4.75a.75.75 0 0 1 1.06 0Z"
+              clipRule="evenodd"
             />
           </svg>
         </button>
       </div>
 
       <div className="card">
-        <div className="card-header">Financial Starting Point</div>
         <div className="space-y-4 px-5 py-5">
-          <CurrencyInput
-            label="Current Total Net Worth"
-            value={inputs.startingTotalNW}
-            onChange={(value) => onUpdateInputs({ ...inputs, startingTotalNW: value })}
-            min={0}
-          />
-          <CurrencyInput
-            label="Accessible Net Worth (Non-Retirement)"
-            value={inputs.startingAccessibleNW}
-            onChange={(value) => onUpdateInputs({ ...inputs, startingAccessibleNW: value })}
-            min={0}
-          />
-          <CurrencyInput
-            label="Current Year Income"
-            value={inputs.currentYearIncome}
-            onChange={(value) => onUpdateInputs({ ...inputs, currentYearIncome: value })}
-            min={0}
-          />
-          <CurrencyInput
-            label="Annual Expenses in Retirement"
-            value={inputs.retirementSpending}
-            onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
-            min={0}
-          />
-        </div>
-      </div>
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Current Annual Income</span>
+                <InfoTooltip text="Your current yearly take-home income (after taxes), before any changes." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.currentYearIncome}
+                step={10000}
+                onChange={(value) => onUpdateInputs({ ...inputs, currentYearIncome: value })}
+              />
+            </div>
+          </div>
 
-      <div className="card">
-        <div className="card-header">Timeline & Planning</div>
-        <div className="space-y-4 px-5 py-5">
-          <NumberInput
-            label="Years Until Retirement"
-            value={inputs.yearsUntilRetirement}
-            onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
-            min={1}
-          />
-          <NumberInput
-            label="Projection Years"
-            value={inputs.projectionYears}
-            onChange={(value) => onUpdateInputs({ ...inputs, projectionYears: value })}
-            min={1}
-          />
-        </div>
-      </div>
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Total Net Worth</span>
+                <InfoTooltip text="Total value of all assets minus debts, including your home and retirement accounts." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.startingTotalNW}
+                step={10000}
+                onChange={(value) => onUpdateInputs({ ...inputs, startingTotalNW: value })}
+              />
+            </div>
+          </div>
 
-      <div className="card">
-        <div className="card-header">Investment Assumptions</div>
-        <div className="space-y-4 px-5 py-5">
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Accessible Net Worth</span>
+                <InfoTooltip text="Assets you can use before retirement, like cash, stocks, bonds, and crypto (excluding restricted accounts)." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.startingAccessibleNW}
+                step={10000}
+                onChange={(value) => onUpdateInputs({ ...inputs, startingAccessibleNW: value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Years Until Retirement</span>
+                <InfoTooltip text="Years until your retirement accounts can be accessed." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.yearsUntilRetirement}
+                min={1}
+                onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Retirement Spending</span>
+                <InfoTooltip text="Enter this in today's dollars; inflation is handled via the real return used in the retirement calculations." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.retirementSpending}
+                step={10000}
+                onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
+              />
+            </div>
+          </div>
+
           <PercentInput
-            label="Expected Nominal Return"
+            label="Nominal Return"
+            tooltip="Expected annual investment return before inflation and fees."
             value={inputs.nominalReturn}
             onChange={(value) => onUpdateInputs({ ...inputs, nominalReturn: value })}
           />
           <PercentInput
-            label="Expected Inflation"
+            label="Inflation"
+            tooltip="Annual inflation rate used to adjust future spending targets."
             value={inputs.inflation}
             onChange={(value) => onUpdateInputs({ ...inputs, inflation: value })}
           />
           <PercentInput
-            label="Investment Fees"
+            label="Fees"
+            tooltip="Annual portfolio fees that reduce returns."
             value={inputs.fees}
             onChange={(value) => onUpdateInputs({ ...inputs, fees: value })}
             max={0.05}
           />
           <PercentInput
             label="Safe Withdrawal Rate"
+            tooltip="Percent of your portfolio you plan to withdraw each year in retirement."
             value={inputs.safeWithdrawalRate}
             onChange={(value) => onUpdateInputs({ ...inputs, safeWithdrawalRate: value })}
             max={0.1}
           />
           <PercentInput
-            label="% Income to Retirement Accounts"
+            label="Restricted Savings Rate"
+            tooltip="Share of income going to restricted uses like retirement accounts or mortgage principal."
             value={inputs.restrictedSavingsRate}
             onChange={(value) => onUpdateInputs({ ...inputs, restrictedSavingsRate: value })}
-            max={1}
+            max={0.5}
           />
+          <div className="grid gap-3">
+            <div>
+              <label className="label flex items-center gap-2">
+                <span>Projection Years</span>
+                <InfoTooltip text="How many years the model projects into the future." />
+              </label>
+              <NumberInput
+                className="input"
+                value={inputs.projectionYears}
+                min={1}
+                onChange={(value) => onUpdateInputs({ ...inputs, projectionYears: value })}
+              />
+            </div>
+          </div>
+
+          <button className="button w-full" onClick={onReset}>
+            Reset to Defaults
+          </button>
         </div>
       </div>
-
-      <button className="button w-full" onClick={onReset}>
-        Reset to Defaults
-      </button>
     </aside>
   );
 }
