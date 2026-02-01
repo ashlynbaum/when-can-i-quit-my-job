@@ -26,6 +26,16 @@ type ChartsProps = {
 };
 
 const tooltipFormatter = (value: number) => formatCurrency(value);
+const renderTopRightLabel =
+  (value: string, fill: string, fontSize = 10) =>
+  ({ viewBox }: { viewBox?: { x?: number; y?: number } }) => {
+    if (!viewBox || typeof viewBox.x !== "number" || typeof viewBox.y !== "number") return null;
+    return (
+      <text x={viewBox.x + 6} y={viewBox.y + 12} fill={fill} fontSize={fontSize} textAnchor="start">
+        {value}
+      </text>
+    );
+  };
 
 export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
   const netWorthRows = useMemo(
@@ -105,14 +115,21 @@ export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
               y={targetNumber}
               stroke="#94a3b8"
               strokeDasharray="4 4"
-              label={{ value: "Target", position: "insideTopLeft", fill: "#64748b", fontSize: 11 }}
+              label={{
+                value: "Target",
+                position: "insideTopLeft",
+                fill: "#64748b",
+                fontSize: 11,
+                textAnchor: "start",
+                dy: -24
+              }}
             />
             {kpis.yearsToCoast && (
               <ReferenceLine
                 x={kpis.yearsToCoast}
                 stroke="#38bdf8"
                 strokeDasharray="2 2"
-                label={{ value: "Coast", position: "insideTop", fill: "#38bdf8", fontSize: 10 }}
+                label={renderTopRightLabel("Coast", "#38bdf8")}
               />
             )}
             {kpis.yearsToEnough && (
@@ -120,19 +137,14 @@ export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
                 x={kpis.yearsToEnough}
                 stroke="#0f172a"
                 strokeDasharray="2 2"
-                label={{ value: "Quit", position: "insideTop", fill: "#0f172a", fontSize: 10 }}
+                label={renderTopRightLabel("Quit", "#0f172a")}
               />
             )}
             <ReferenceLine
               x={retirementYear}
               stroke="#a855f7"
               strokeDasharray="2 2"
-              label={{
-                value: "Retirement",
-                position: "insideTop",
-                fill: "#a855f7",
-                fontSize: 10
-              }}
+              label={renderTopRightLabel("Retirement", "#a855f7")}
             />
             {bridgeGapStart && (
               <ReferenceLine
