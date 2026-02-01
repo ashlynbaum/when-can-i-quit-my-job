@@ -10,13 +10,15 @@ export const defaultInputs: GlobalInputs = {
   fees: 0.0002,
   safeWithdrawalRate: 0.04,
   retirementSpending: 180_000,
-  restrictedSavingsRate: 0.1
+  restrictedSavingsRate: 0.1,
+  currentYearIncome: 403_000
 };
 
 export const defaultScenarios: Scenario[] = [
   {
     id: "baseline",
     name: "Baseline",
+    description: "Years 1-2: work income $403,000, expenses $216,000. Years 3-8: work income $403,000, expenses $204,000. Years 9-11: work income $403,000, expenses $180,000. Years 12-40: work income $0, expenses $180,000.",
     segments: [
       {
         id: "baseline-1",
@@ -51,6 +53,7 @@ export const defaultScenarios: Scenario[] = [
   {
     id: "sabbatical",
     name: "Sabbatical Year 3",
+    description: "Take year 3 off, then return to your prior income afterward.",
     segments: [
       {
         id: "sabbatical-1",
@@ -92,6 +95,7 @@ export const defaultScenarios: Scenario[] = [
   {
     id: "two-thirds",
     name: "2/3 Income after Year 4",
+    description: "Years 1-2: work income $403,000, expenses $216,000. Years 3-4: work income $403,000, expenses $204,000. Years 5-11: work income $268,667, expenses $204,000. Years 12-40: work income $0, expenses $180,000.",
     segments: [
       {
         id: "twothirds-1",

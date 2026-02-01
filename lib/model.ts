@@ -9,6 +9,7 @@ export type Segment = {
 export type Scenario = {
   id: string;
   name: string;
+  description: string;
   segments: Segment[];
 };
 
@@ -23,6 +24,7 @@ export type GlobalInputs = {
   safeWithdrawalRate: number;
   retirementSpending: number;
   restrictedSavingsRate: number;
+  currentYearIncome: number;
 };
 
 export type YearRow = {
@@ -51,10 +53,12 @@ export type ScenarioResult = {
 
 export type Kpis = {
   yearsToCoast: number | null;
-  yearsToFire: number | null;
+  yearsToEnough: number | null;
   earliestSabbaticalYear: number | null;
   accessibleRunwayYears: number | null;
   capitalCoverageAccessible: number | null;
+  retirementNetWorth: number | null;
+  bridgeGapYears: number | null;
 };
 
 type YearPlan = {
@@ -63,8 +67,16 @@ type YearPlan = {
   source: "segment" | "default";
 };
 
-export function getFireNumber(inputs: GlobalInputs): number {
+export function getEnoughNumber(inputs: GlobalInputs): number {
   return inputs.retirementSpending / inputs.safeWithdrawalRate;
+}
+
+export function getSecurityNumberAtYear(inputs: GlobalInputs, year: number): number {
+  const enoughNumber = getEnoughNumber(inputs);
+  const yearsRemaining = inputs.yearsUntilRetirement - year + 1;
+  const realReturn = getRealReturn(inputs);
+  if (yearsRemaining <= 0) return enoughNumber;
+  return enoughNumber / Math.pow(1 + realReturn, yearsRemaining);
 }
 
 export function getRealReturn(inputs: GlobalInputs): number {
@@ -72,11 +84,7 @@ export function getRealReturn(inputs: GlobalInputs): number {
 }
 
 export function getCoastFireNumberAtYear(inputs: GlobalInputs, year: number): number {
-  const fireNumber = getFireNumber(inputs);
-  const yearsRemaining = inputs.yearsUntilRetirement - year + 1;
-  const realReturn = getRealReturn(inputs);
-  if (yearsRemaining <= 0) return fireNumber;
-  return fireNumber / Math.pow(1 + realReturn, yearsRemaining);
+  return getSecurityNumberAtYear(inputs, year);
 }
 
 export function getSegmentIssues(segments: Segment[]): string[] {
@@ -185,9 +193,9 @@ export function computeScenario(inputs: GlobalInputs, scenario: Scenario): Scena
 }
 
 export function computeKpis(inputs: GlobalInputs, rows: YearRow[]): Kpis {
-  const fireNumber = getFireNumber(inputs);
+  const enoughNumber = getEnoughNumber(inputs);
   const yearsToCoast = rows.find((row) => row.startTotalNW >= row.coastFireNumber)?.year ?? null;
-  const yearsToFire = rows.find((row) => row.startTotalNW >= fireNumber)?.year ?? null;
+  const yearsToEnough = rows.find((row) => row.startTotalNW >= enoughNumber)?.year ?? null;
   const earliestSabbaticalYear =
     rows.find((row) => row.startAccessibleNW >= row.expenses)?.year ?? null;
   const firstYear = rows[0];
@@ -198,11 +206,31 @@ export function computeKpis(inputs: GlobalInputs, rows: YearRow[]): Kpis {
       ? (firstYear.startAccessibleNW * inputs.safeWithdrawalRate) / firstYear.expenses
       : null;
 
+  // Calculate retirement net worth
+  const retirementYear = rows.find((row) => row.year === inputs.yearsUntilRetirement);
+  const retirementNetWorth = retirementYear ? retirementYear.endTotalNW : null;
+
+  // Calculate bridge gap years (when accessible savings run out before retirement accounts available)
+  let bridgeGapYears: number | null = null;
+  const retirementYearIndex = inputs.yearsUntilRetirement - 1;
+  if (retirementYearIndex >= 0 && retirementYearIndex < rows.length) {
+    for (let i = 0; i < retirementYearIndex; i++) {
+      const row = rows[i];
+      if (row.endAccessibleNW < 0) {
+        const yearsUntilRetirement = inputs.yearsUntilRetirement - row.year;
+        bridgeGapYears = yearsUntilRetirement;
+        break;
+      }
+    }
+  }
+
   return {
     yearsToCoast,
-    yearsToFire,
+    yearsToEnough,
     earliestSabbaticalYear,
     accessibleRunwayYears,
-    capitalCoverageAccessible
+    capitalCoverageAccessible,
+    retirementNetWorth,
+    bridgeGapYears
   };
 }

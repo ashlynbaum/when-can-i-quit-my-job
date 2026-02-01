@@ -12,6 +12,7 @@ export const segmentSchema = z.object({
 export const scenarioSchema = z.object({
   id: z.string(),
   name: z.string(),
+  description: z.string(),
   segments: z.array(segmentSchema)
 });
 
@@ -25,7 +26,8 @@ export const inputsSchema: z.ZodType<GlobalInputs> = z.object({
   fees: z.number(),
   safeWithdrawalRate: z.number(),
   retirementSpending: z.number(),
-  restrictedSavingsRate: z.number()
+  restrictedSavingsRate: z.number(),
+  currentYearIncome: z.number()
 });
 
 export const appStateSchema = z.object({
