@@ -986,11 +986,11 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 flex-col md:flex-row">
         <div
           id="inputs"
-          className={`fixed inset-y-0 left-0 z-20 transform bg-white transition-all duration-300 ease-in-out md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden ${
-            sidebarOpen ? "w-full translate-x-0 shadow-lg md:shadow-none" : "w-10 translate-x-0 md:w-10"
+          className={`w-full bg-white border-b border-slate-200 md:border-b-0 md:w-auto md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden ${
+            sidebarOpen ? "md:shadow-none" : "md:w-10"
           }`}
           style={
             sidebarOpen
@@ -998,31 +998,42 @@ export default function HomePage() {
               : undefined
           }
         >
-          {sidebarOpen ? (
+          <div className="md:hidden max-h-screen overflow-y-auto">
             <Sidebar
               inputs={inputs}
-              isOpen={sidebarOpen}
-              onToggleOpen={() => setSidebarOpen((prev) => !prev)}
+              isOpen={true}
+              onToggleOpen={() => {}}
               onUpdateInputs={setInputs}
               onReset={handleReset}
             />
-          ) : (
-            <div className="flex h-full items-start justify-center bg-slate-50 pl-6 pr-5 pt-4 transition-opacity duration-300 ease-in-out">
-              <button
-                className="rounded-md border border-slate-200 bg-white px-2 py-2 pl-3 text-slate-500 transition -translate-x-2 hover:border-slate-300 hover:text-slate-900"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Open sidebar"
-              >
-                <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M7.22 15.78a.75.75 0 0 1 0-1.06L11.44 10 7.22 5.78a.75.75 0 1 1 1.06-1.06l4.75 4.75c.3.3.3.77 0 1.06l-4.75 4.75a.75.75 0 0 1-1.06 0Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          )}
+          </div>
+          <div className="hidden md:block">
+            {sidebarOpen ? (
+              <Sidebar
+                inputs={inputs}
+                isOpen={sidebarOpen}
+                onToggleOpen={() => setSidebarOpen((prev) => !prev)}
+                onUpdateInputs={setInputs}
+                onReset={handleReset}
+              />
+            ) : (
+              <div className="flex h-full items-start justify-center bg-slate-50 pl-6 pr-5 pt-4 transition-opacity duration-300 ease-in-out">
+                <button
+                  className="rounded-md border border-slate-200 bg-white px-2 py-2 pl-3 text-slate-500 transition -translate-x-2 hover:border-slate-300 hover:text-slate-900"
+                  onClick={() => setSidebarOpen(true)}
+                  aria-label="Open sidebar"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M7.22 15.78a.75.75 0 0 1 0-1.06L11.44 10 7.22 5.78a.75.75 0 1 1 1.06-1.06l4.75 4.75c.3.3.3.77 0 1.06l-4.75 4.75a.75.75 0 0 1-1.06 0Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
           {sidebarOpen && (
             <div
               className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize bg-transparent hover:bg-slate-200 md:block"
@@ -1033,7 +1044,7 @@ export default function HomePage() {
           )}
         </div>
 
-        <main className="min-w-0 flex-1 p-6">
+        <main className="min-w-0 flex-1 p-4 sm:p-6">
           <div className="mx-auto w-full max-w-6xl">
             <div className="space-y-6">
               <section className="card" id="results">

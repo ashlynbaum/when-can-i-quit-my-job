@@ -25,7 +25,7 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-white px-5 py-6"
+      className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-slate-200 bg-white px-5 py-6 md:border-r"
       data-sidebar
     >
       <div className="flex items-start justify-between gap-3">
@@ -36,7 +36,7 @@ export function Sidebar({
           </p>
         </div>
         <button
-          className="rounded-md border border-slate-200 bg-white px-2 py-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+          className="hidden rounded-md border border-slate-200 bg-white px-2 py-2 text-slate-500 transition hover:border-slate-300 hover:text-slate-900 md:block"
           onClick={onToggleOpen}
           aria-label="Toggle sidebar"
         >
