@@ -26,16 +26,12 @@ type ChartsProps = {
 };
 
 const tooltipFormatter = (value: number) => formatCurrency(value);
-const renderTopRightLabel =
-  (value: string, fill: string, fontSize = 10) =>
-  ({ viewBox }: { viewBox?: { x?: number; y?: number } }) => {
-    if (!viewBox || typeof viewBox.x !== "number" || typeof viewBox.y !== "number") return null;
-    return (
-      <text x={viewBox.x + 6} y={viewBox.y + 12} fill={fill} fontSize={fontSize} textAnchor="start">
-        {value}
-      </text>
-    );
-  };
+const buildTopRightLabel = (value: string, fill: string, fontSize = 10) => ({
+  value,
+  position: "insideTopRight" as const,
+  fill,
+  fontSize
+});
 
 export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
   const netWorthRows = useMemo(
@@ -129,7 +125,7 @@ export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
                 x={kpis.yearsToCoast}
                 stroke="#38bdf8"
                 strokeDasharray="2 2"
-                label={renderTopRightLabel("Coast", "#38bdf8")}
+                label={buildTopRightLabel("Coast", "#38bdf8")}
               />
             )}
             {kpis.yearsToEnough && (
@@ -137,14 +133,14 @@ export function Charts({ rows, inputs, kpis, targetNumber }: ChartsProps) {
                 x={kpis.yearsToEnough}
                 stroke="#0f172a"
                 strokeDasharray="2 2"
-                label={renderTopRightLabel("Quit", "#0f172a")}
+                label={buildTopRightLabel("Quit", "#0f172a")}
               />
             )}
             <ReferenceLine
               x={retirementYear}
               stroke="#a855f7"
               strokeDasharray="2 2"
-              label={renderTopRightLabel("Retirement", "#a855f7")}
+              label={buildTopRightLabel("Retirement", "#a855f7")}
             />
             {bridgeGapStart && (
               <ReferenceLine

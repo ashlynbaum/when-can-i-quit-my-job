@@ -163,12 +163,50 @@ const buildDefaultScenarios = (inputs: GlobalInputs): Scenario[] => {
   const clampedGapYear = Math.min(inputs.projectionYears, gapYear);
 
   return scaledDefaults.map((scenario) => {
-    if (scenario.id !== "sabbatical") return scenario;
-    return {
-      ...scenario,
-      description: `Take year ${clampedGapYear} off, then return to your prior income afterward.`,
-      segments: buildGapYearSegments(baseline.segments, clampedGapYear)
-    };
+    if (scenario.id === "sabbatical") {
+      return {
+        ...scenario,
+        description: `Take year ${clampedGapYear} off, then return to your prior income afterward.`,
+        segments: buildGapYearSegments(baseline.segments, clampedGapYear)
+      };
+    }
+    
+    if (scenario.id === "two-thirds") {
+      const cruiseStartYear = Math.min(inputs.projectionYears, coastYear + 1);
+      const fullTimeIncome = baseline.segments[0]?.annualWorkIncome ?? inputs.currentYearIncome;
+      const partTimeIncome = Math.round(fullTimeIncome * 0.67);
+      const expenses = inputs.retirementSpending;
+      
+      return {
+        ...scenario,
+        description: `Drop to part-time income after year ${coastYear}, maintaining steady expenses.`,
+        segments: [
+          {
+            id: createId(),
+            startYear: 1,
+            endYear: coastYear,
+            annualWorkIncome: fullTimeIncome,
+            annualExpenses: expenses
+          },
+          {
+            id: createId(),
+            startYear: cruiseStartYear,
+            endYear: inputs.yearsUntilRetirement,
+            annualWorkIncome: partTimeIncome,
+            annualExpenses: expenses
+          },
+          {
+            id: createId(),
+            startYear: inputs.yearsUntilRetirement + 1,
+            endYear: inputs.projectionYears,
+            annualWorkIncome: 0,
+            annualExpenses: expenses
+          }
+        ]
+      };
+    }
+    
+    return scenario;
   });
 };
 
@@ -227,7 +265,23 @@ export default function HomePage() {
 
   useEffect(() => {
     const prevInputs = prevInputsRef.current;
-    if (prevInputs.retirementSpending === inputs.retirementSpending) return;
+    
+    // Check if any relevant input has changed
+    const hasChanged = 
+      prevInputs.retirementSpending !== inputs.retirementSpending ||
+      prevInputs.currentYearIncome !== inputs.currentYearIncome ||
+      prevInputs.yearsUntilRetirement !== inputs.yearsUntilRetirement ||
+      prevInputs.projectionYears !== inputs.projectionYears ||
+      prevInputs.startingTotalNW !== inputs.startingTotalNW ||
+      prevInputs.startingAccessibleNW !== inputs.startingAccessibleNW ||
+      prevInputs.nominalReturn !== inputs.nominalReturn ||
+      prevInputs.inflation !== inputs.inflation ||
+      prevInputs.fees !== inputs.fees ||
+      prevInputs.safeWithdrawalRate !== inputs.safeWithdrawalRate ||
+      prevInputs.restrictedSavingsRate !== inputs.restrictedSavingsRate;
+    
+    if (!hasChanged) return;
+    
     const prevDefaults = buildDefaultScenarios(prevInputs);
     const nextDefaults = buildDefaultScenarios(inputs);
     setScenarios((prev) =>
@@ -239,23 +293,19 @@ export default function HomePage() {
         return { ...scenario, segments: nextDefault.segments, description: nextDefault.description };
       })
     );
-  }, [inputs.retirementSpending]);
-
-  useEffect(() => {
-    const prevInputs = prevInputsRef.current;
-    if (prevInputs.currentYearIncome === inputs.currentYearIncome) return;
-    const prevDefaults = buildDefaultScenarios(prevInputs);
-    const nextDefaults = buildDefaultScenarios(inputs);
-    setScenarios((prev) =>
-      prev.map((scenario) => {
-        const prevDefault = prevDefaults.find((candidate) => candidate.id === scenario.id);
-        const nextDefault = nextDefaults.find((candidate) => candidate.id === scenario.id);
-        if (!prevDefault || !nextDefault) return scenario;
-        if (!segmentsMatch(scenario.segments, prevDefault.segments)) return scenario;
-        return { ...scenario, segments: nextDefault.segments, description: nextDefault.description };
-      })
-    );
-  }, [inputs.currentYearIncome]);
+  }, [
+    inputs.retirementSpending,
+    inputs.currentYearIncome,
+    inputs.yearsUntilRetirement,
+    inputs.projectionYears,
+    inputs.startingTotalNW,
+    inputs.startingAccessibleNW,
+    inputs.nominalReturn,
+    inputs.inflation,
+    inputs.fees,
+    inputs.safeWithdrawalRate,
+    inputs.restrictedSavingsRate
+  ]);
 
   useEffect(() => {
     prevInputsRef.current = inputs;

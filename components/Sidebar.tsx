@@ -2,6 +2,7 @@
 
 import { PercentInput } from "./PercentInput";
 import { NumberInput } from "./NumberInput";
+import { CurrencyInput } from "./CurrencyInput";
 import { InfoTooltip } from "./InfoTooltip";
 import type { GlobalInputs } from "@/lib/model";
 
@@ -20,6 +21,8 @@ export function Sidebar({
   onUpdateInputs,
   onReset
 }: SidebarProps) {
+  const restrictedNetWorth = inputs.startingTotalNW - inputs.startingAccessibleNW;
+
   return (
     <aside
       className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-white px-5 py-6"
@@ -60,10 +63,9 @@ export function Sidebar({
               <span>Current Annual Income</span>
               <InfoTooltip text="Your current yearly take-home income (after taxes), before any changes." />
             </label>
-            <NumberInput
+            <CurrencyInput
               className="input"
               value={inputs.currentYearIncome}
-              step={10000}
               onChange={(value) => onUpdateInputs({ ...inputs, currentYearIncome: value })}
             />
           </div>
@@ -73,11 +75,16 @@ export function Sidebar({
               <span>Accessible Net Worth</span>
               <InfoTooltip text="Assets you can use before retirement, like cash, stocks, bonds, and crypto (excluding restricted accounts)." />
             </label>
-            <NumberInput
+            <CurrencyInput
               className="input"
               value={inputs.startingAccessibleNW}
-              step={10000}
-              onChange={(value) => onUpdateInputs({ ...inputs, startingAccessibleNW: value })}
+              onChange={(value) =>
+                onUpdateInputs({
+                  ...inputs,
+                  startingAccessibleNW: value,
+                  startingTotalNW: value + restrictedNetWorth
+                })
+              }
             />
           </div>
 
@@ -86,10 +93,9 @@ export function Sidebar({
               <span>Restricted Net Worth</span>
               <InfoTooltip text="Assets locked until retirement, like 401(k), IRA, and home equity." />
             </label>
-            <NumberInput
+            <CurrencyInput
               className="input"
-              value={inputs.startingTotalNW - inputs.startingAccessibleNW}
-              step={10000}
+              value={restrictedNetWorth}
               onChange={(value) => onUpdateInputs({ 
                 ...inputs, 
                 startingTotalNW: inputs.startingAccessibleNW + value 
@@ -105,10 +111,9 @@ export function Sidebar({
               <span>Retirement Spending</span>
               <InfoTooltip text="Enter this in today's dollars; inflation is handled via the real return used in the retirement calculations." />
             </label>
-            <NumberInput
+            <CurrencyInput
               className="input"
               value={inputs.retirementSpending}
-              step={10000}
               onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
             />
           </div>
