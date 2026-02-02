@@ -1,10 +1,10 @@
 import type { GlobalInputs, Scenario } from "./model";
 
 export const defaultInputs: GlobalInputs = {
-  projectionYears: 45,
+  projectionYears: 40,
   yearsUntilRetirement: 25,
   startingTotalNW: 440_000,
-  startingAccessibleNW: 12_000,
+  startingAccessibleNW: 120_000,
   nominalReturn: 0.07,
   inflation: 0.025,
   fees: 0.0002,
@@ -30,7 +30,7 @@ export const defaultScenarios: Scenario[] = [
       {
         id: "baseline-2",
         startYear: 26,
-        endYear: 45,
+        endYear: 40,
         annualWorkIncome: 0,
         annualExpenses: 100_000
       }
