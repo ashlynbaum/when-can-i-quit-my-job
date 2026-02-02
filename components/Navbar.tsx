@@ -14,8 +14,8 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 px-6 py-3">
-      <div className="mx-auto w-full max-w-6xl">
+    <nav className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 px-6 py-5">
+      <div className="mx-auto w-full">
         <div className="flex items-center justify-end gap-7 text-sm">
           {links.map((link) => {
             const isActive = pathname === link.href;

@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function WhyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
-      <div className="mx-auto max-w-2xl px-6 pt-16 pb-24">
+      <div className="mx-auto max-w-2xl px-6 pt-10 pb-24">
         <Link
           href="/"
           className="mb-8 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900"

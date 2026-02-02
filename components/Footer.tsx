@@ -43,7 +43,7 @@ export function Footer() {
         <div className="absolute top-20 right-10 h-40 w-40 rounded-full bg-white/30 blur-3xl" aria-hidden="true" />
         <div className="absolute bottom-10 left-16 h-36 w-36 rounded-full bg-white/25 blur-2xl" aria-hidden="true" />
         
-        <div className="relative mx-auto max-w-4xl px-4 py-20 sm:px-6">
+        <div className="relative mx-auto max-w-4xl px-4 pt-20 pb-24 sm:px-6">
           <div className="text-center">
             <div className="relative inline-block w-fit mb-5">
               <div
@@ -148,7 +148,7 @@ export function Footer() {
         <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-white/20 blur-2xl" aria-hidden="true" />
         <div className="absolute bottom-16 right-16 h-40 w-40 rounded-full bg-white/30 blur-3xl" aria-hidden="true" />
         
-        <div className="relative mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+        <div className="relative mx-auto max-w-3xl px-4 pt-16 pb-20 text-center sm:px-6">
           <div className="inline-block rounded-full border-2 border-white/60 bg-white/40 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 shadow-sm backdrop-blur-sm mb-5">
             Plot Twist
           </div>

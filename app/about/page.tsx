@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
-      <div className="mx-auto max-w-2xl px-6 pt-16 pb-24">
+      <div className="mx-auto max-w-2xl px-6 pt-10 pb-16">
         <Link
           href="/"
           className="mb-8 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-slate-900"
@@ -104,15 +104,7 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 text-center">
-            <p className="text-lg font-medium text-slate-900">Ready to find your number?</p>
-            <Link
-              href="/"
-              className="mt-4 inline-block rounded-full bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:from-slate-800 hover:to-slate-700"
-            >
-              Do the math
-            </Link>
-          </div>
+          
         </div>
       </div>
     </div>
