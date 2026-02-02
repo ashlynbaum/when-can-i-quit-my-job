@@ -24,58 +24,71 @@ export default function WhyPage() {
 
         <div className="mt-12 space-y-12">
           <section>
-            <h2 className="text-2xl font-semibold text-slate-900">The research is clear</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">What actually matters</h2>
             <p className="mt-4 text-slate-600 leading-relaxed">
-              Harvard ran an 80+ year study tracking what actually makes people happy. The answer wasn't money, success, or achievements. It was <strong>relationships</strong>. People who stayed healthiest and happiest were the ones who prioritized connections with others.
+              Decades of happiness research point to the same conclusion: once your basic needs are covered, more money doesn't do much. What actually helps? <strong>Strong relationships and meaningful work</strong>.
             </p>
             <p className="mt-4 text-slate-600 leading-relaxed">
-              But here's the thing — it's hard to prioritize relationships when you're stressed about rent. Money matters up to a point. Once your basic needs are covered and you have some breathing room, more money doesn't really move the needle on happiness.
+              But here's the catch — it's hard to prioritize those things when you're anxious about making rent or stressed about your job security. Money isn't the goal. It's the foundation that lets you focus on what matters.
+            </p>
+            <p className="mt-4 text-slate-600 leading-relaxed">
+              Ever declined plans with friends because of a work deadline? Stayed in a draining job because you needed the income? Felt guilty taking a week off? That's what financial stress does. It narrows your options until "can I afford this?" becomes the first question about everything.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-slate-900">The happiness ladder</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">The shift</h2>
+            <p className="mt-4 text-slate-600 leading-relaxed">
+              This calculator helps you see when the question changes:
+            </p>
+            <div className="mt-6 space-y-4">
+              <div className="rounded-lg border border-slate-200 bg-white/80 p-5">
+                <p className="font-medium text-slate-500">Before:</p>
+                <p className="mt-2 text-slate-900">"Can I afford to take time off?"</p>
+              </div>
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-5">
+                <p className="font-medium text-emerald-700">After:</p>
+                <p className="mt-2 text-slate-900">"Do I want to take time off?"</p>
+              </div>
+            </div>
+            <p className="mt-6 text-slate-600 leading-relaxed">
+              That shift happens in stages. And each stage unlocks different choices.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold text-slate-900">The three milestones</h2>
             <div className="mt-6 space-y-6">
               <div className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-6">
-                <h3 className="font-semibold text-emerald-800">1. Cover the basics</h3>
+                <h3 className="font-semibold text-emerald-800">1. Survive</h3>
                 <p className="mt-2 text-emerald-700">
-                  Housing, food, healthcare. The stuff that keeps you alive and not panicking. This is where money genuinely helps.
+                  You have a year of expenses in accessible savings. One bad month won't wreck you. You can breathe.
                 </p>
               </div>
               <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-sky-50 p-6">
-                <h3 className="font-semibold text-blue-800">2. Buy yourself options</h3>
+                <h3 className="font-semibold text-blue-800">2. Coast</h3>
                 <p className="mt-2 text-blue-700">
-                  Enough saved that one bad month (or year) won't wreck you. Breathing room. The ability to say "no" to things that drain you.
+                  Your investments will grow to cover retirement on their own. You can shift to work you love—even if it pays less—without compromising your future.
                 </p>
               </div>
               <div className="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-6">
-                <h3 className="font-semibold text-purple-800">3. Choose your life</h3>
+                <h3 className="font-semibold text-purple-800">3. Quit</h3>
                 <p className="mt-2 text-purple-700">
-                  Time for people you love. Work that feels meaningful. Rest that isn't "recovering from burnout." This is the actual goal.
+                  Your portfolio supports your spending indefinitely. Work becomes optional. You choose what Tuesday looks like.
                 </p>
               </div>
             </div>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold text-slate-900">So when can you quit?</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Your freedom date</h2>
             <p className="mt-4 text-slate-600 leading-relaxed">
-              Not "never work again" quit (unless you want that). More like: when can you take a year off? When can you switch to a job you love that pays less? When can you go part-time? When can you stop optimizing and start living?
+              Not "never work again" (unless you want that). More like: when can you take a year off? When can you go part-time? When can you switch to that job you'd love but pays less? When can you stop optimizing for comp and start optimizing for life?
             </p>
             <p className="mt-4 text-slate-600 leading-relaxed">
-              That's what this calculator helps you figure out. Not a retirement date. A <strong>freedom date</strong>.
+              That's what this calculator helps you figure out. Not a retirement date. A <strong>freedom date</strong>. The point where money stops being the reason you can't make a change.
             </p>
           </section>
-
-          <div className="rounded-2xl border border-slate-200 bg-white/80 p-8 text-center">
-            <p className="text-lg font-medium text-slate-900">Ready to find your number?</p>
-            <Link
-              href="/"
-              className="mt-4 inline-block rounded-full bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:from-slate-800 hover:to-slate-700"
-            >
-              Do the math
-            </Link>
-          </div>
         </div>
       </div>
     </div>
