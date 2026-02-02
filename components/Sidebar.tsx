@@ -27,11 +27,9 @@ export function Sidebar({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
-            Spill the Tea
-          </h2>
+          <h2 className="text-sm font-semibold text-slate-700">Spill the Tea</h2>
           <p className="text-sm text-slate-500">
-            Your financial situation, the base inputs that drive the projections.
+            Your baseline numbers that shape the entire projection.
           </p>
         </div>
         <button
@@ -104,19 +102,6 @@ export function Sidebar({
 
           <div className="space-y-2">
             <label className="label flex items-center gap-2">
-              <span>Years Until Retirement</span>
-              <InfoTooltip text="Years until your retirement accounts can be accessed." />
-            </label>
-            <NumberInput
-              className="input"
-              value={inputs.yearsUntilRetirement}
-              min={1}
-              onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="label flex items-center gap-2">
               <span>Retirement Spending</span>
               <InfoTooltip text="Enter this in today's dollars; inflation is handled via the real return used in the retirement calculations." />
             </label>
@@ -125,6 +110,19 @@ export function Sidebar({
               value={inputs.retirementSpending}
               step={10000}
               onChange={(value) => onUpdateInputs({ ...inputs, retirementSpending: value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="label flex items-center gap-2">
+              <span>Years Until Retirement</span>
+              <InfoTooltip text="Years until your retirement accounts can be accessed." />
+            </label>
+            <NumberInput
+              className="input"
+              value={inputs.yearsUntilRetirement}
+              min={1}
+              onChange={(value) => onUpdateInputs({ ...inputs, yearsUntilRetirement: value })}
             />
           </div>
 

@@ -41,3 +41,15 @@ body {
 .badge {
   @apply inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600;
 }
+
+.fill-cell {
+  @apply relative rounded-md border border-slate-200 bg-white px-2 py-1 shadow-sm transition;
+}
+
+.fill-cell-active {
+  @apply border-emerald-300 bg-emerald-50/60;
+}
+
+.fill-handle {
+  @apply absolute right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 cursor-ns-resize rounded-sm border border-slate-300 bg-white shadow-sm opacity-70 transition hover:opacity-100;
+}

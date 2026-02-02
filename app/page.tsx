@@ -58,17 +58,17 @@ const describeSegments = (segments: Segment[]) => {
     .map((segment) => {
       const range =
         segment.startYear === segment.endYear
-          ? `Year ${segment.startYear}`
-          : `Years ${segment.startYear}-${segment.endYear}`;
-      return `${range}: work income ${formatCurrency(segment.annualWorkIncome)}, expenses ${formatCurrency(
+          ? `Y${segment.startYear}`
+          : `Y${segment.startYear}-${segment.endYear}`;
+      return `${range} ${formatCurrency(segment.annualWorkIncome)} / ${formatCurrency(
         segment.annualExpenses
-      )}.`;
+      )}`;
     })
-    .join(" ");
+    .join(" · ");
 
   if (remaining <= 0) return summary;
   const lastYear = merged[merged.length - 1]?.endYear ?? segments.length;
-  return `${summary} + ${remaining} more segments through year ${lastYear}.`;
+  return `${summary} · +${remaining} more through year ${lastYear}`;
 };
 
 const normalizeSegments = (segments: Segment[]) =>
@@ -186,10 +186,14 @@ export default function HomePage() {
   const [simpleEditInflation, setSimpleEditInflation] = useState(false);
   const [simpleEditExpenseBase, setSimpleEditExpenseBase] = useState(inputs.retirementSpending);
   const [simpleEditExpenseBaseEdited, setSimpleEditExpenseBaseEdited] = useState(false);
-  const [simpleEditReduceExpenses, setSimpleEditReduceExpenses] = useState(false);
+  const [simpleEditReduceExpenses, setSimpleEditReduceExpenses] = useState(true);
   const [simpleEditExpenseRules, setSimpleEditExpenseRules] = useState<
     { id: string; startYear: number; expenseValue: number | null }[]
   >([]);
+  const [simpleEditIncomeRules, setSimpleEditIncomeRules] = useState<
+    { id: string; startYear: number; incomeValue: number | null }[]
+  >([]);
+  const [simpleEditIncomeBaseEdited, setSimpleEditIncomeBaseEdited] = useState(false);
   const [scenarioMeta, setScenarioMeta] = useState<
     Record<string, { autoName: boolean; autoDescription: boolean }>
   >({});
@@ -381,16 +385,11 @@ export default function HomePage() {
     setSimpleEditExpenseRules([
       {
         id: createId(),
-        startYear: normalizedSuggestion.reduceStartYear,
-        expenseValue: null
+        startYear: 1,
+        expenseValue: inputs.retirementSpending
       }
     ]);
-  }, [
-    normalizedSuggestion.reduceStartYear,
-    simpleEditExpenseBase,
-    simpleEditExpenseRules.length,
-    simpleEditReduceExpenses
-  ]);
+  }, [inputs.retirementSpending, simpleEditExpenseRules.length, simpleEditReduceExpenses]);
 
   useEffect(() => {
     if (simpleEditReduceExpenses) return;
@@ -398,21 +397,47 @@ export default function HomePage() {
     setSimpleEditExpenseRules([]);
   }, [simpleEditReduceExpenses, simpleEditExpenseRules.length]);
 
+  useEffect(() => {
+    setSimpleEditIncomeRules((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: createId(),
+            startYear: 1,
+            incomeValue: inputs.currentYearIncome
+          }
+        ];
+      }
+      const [first, ...rest] = prev;
+      if (first.startYear !== 1) {
+        return [{ ...first, startYear: 1 }, ...rest];
+      }
+      if (!simpleEditIncomeBaseEdited) {
+        return [{ ...first, incomeValue: inputs.currentYearIncome }, ...rest];
+      }
+      return prev;
+    });
+  }, [inputs.currentYearIncome, simpleEditIncomeBaseEdited]);
+
   const suggestedRows = useMemo(() => {
     return scenarioResult.rows.map((row) => {
       let workIncome = row.workIncome;
       let expenses = row.expenses;
-      const inRange =
-        row.year >= normalizedSuggestion.reduceStartYear &&
-        row.year <= normalizedSuggestion.reduceEndYear;
-
       if (simpleEditMode === "income") {
-        workIncome = inputs.currentYearIncome;
-        if (inRange) {
-          workIncome = Math.round(workIncome * normalizedSuggestion.reduceMultiplier);
-        }
-        if (row.year >= normalizedSuggestion.zeroIncomeAfterYear) {
-          workIncome = 0;
+        const baseIncome =
+          typeof simpleEditIncomeRules[0]?.incomeValue === "number"
+            ? simpleEditIncomeRules[0]?.incomeValue
+            : inputs.currentYearIncome;
+        if (simpleEditIncomeRules.length > 0) {
+          const sortedRules = [...simpleEditIncomeRules].sort((a, b) => a.startYear - b.startYear);
+          const activeRule = sortedRules
+            .filter((rule) => rule.startYear <= row.year)
+            .slice(-1)[0];
+          const ruleBaseValue =
+            typeof activeRule?.incomeValue === "number" ? activeRule.incomeValue : baseIncome;
+          workIncome = ruleBaseValue;
+        } else {
+          workIncome = baseIncome;
         }
       } else {
         const baseExpenses = Number.isFinite(simpleEditExpenseBase)
@@ -445,11 +470,11 @@ export default function HomePage() {
     simpleEditInflation,
     simpleEditExpenseBase,
     simpleEditReduceExpenses,
-    simpleEditExpenseRules
+    simpleEditExpenseRules,
+    simpleEditIncomeRules
   ]);
 
   const suggestedScenarioName = useMemo(() => {
-    const percent = Math.round(normalizedSuggestion.reduceMultiplier * 100);
     const label = simpleEditMode === "income" ? "Income" : "Expenses";
     const range =
       simpleEditMode === "income"
@@ -460,8 +485,9 @@ export default function HomePage() {
       const reductionLabel = simpleEditReduceExpenses ? " + reductions" : "";
       return `${label}${inflationLabel} ${range}${reductionLabel}`;
     }
-    return `${label} ${range} @ ${percent}% + 0 after ${normalizedSuggestion.zeroIncomeAfterYear}`;
-  }, [normalizedSuggestion, simpleEditMode, simpleEditInflation, simpleEditReduceExpenses]);
+    const adjustmentLabel = simpleEditIncomeRules.length > 1 ? " + adjustments" : "";
+    return `${label}${adjustmentLabel}`;
+  }, [normalizedSuggestion, simpleEditMode, simpleEditInflation, simpleEditReduceExpenses, simpleEditIncomeRules.length]);
 
   const kpis = useMemo(() => computeKpis(inputs, scenarioResult.rows), [inputs, scenarioResult.rows]);
   const baselineKpis = useMemo(
@@ -1185,97 +1211,304 @@ export default function HomePage() {
 
             <div className="grid h-[calc(92vh-72px)] gap-6 overflow-y-auto p-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
               <div className="space-y-6">
-                <p className="text-sm text-slate-500">
-                  Tweak your income and expenses over time to see how it changes your forecast.
-                </p>
                 <div className="card">
                   <div className="space-y-6 px-5 py-5">
-                    <div>
-                      <label className="label">Scenario Name</label>
-                      <input
-                        className="input mb-4"
-                        value={activeScenario.name}
-                        onChange={(event) => handleRenameScenario(activeScenario.id, event.target.value)}
-                      />
-                      <label className="label">Description</label>
-                      <textarea
-                        className="input min-h-[80px]"
-                        value={activeScenario.description}
-                        onChange={(event) =>
-                          handleUpdateScenario(activeScenario.id, { description: event.target.value })
-                        }
-                        placeholder="Describe this scenario in plain English."
-                      />
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="label">Scenario Name</label>
+                        <input
+                          className="input"
+                          value={activeScenario.name}
+                          onChange={(event) => handleRenameScenario(activeScenario.id, event.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="label">Description</label>
+                        <textarea
+                          className="input min-h-[80px]"
+                          value={activeScenario.description}
+                          onChange={(event) =>
+                            handleUpdateScenario(activeScenario.id, { description: event.target.value })
+                          }
+                          placeholder="Describe this scenario in plain English."
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="card">
-                  <div className="space-y-2 px-5 py-5 text-sm text-slate-600">
-                    <h4 className="text-sm font-semibold text-slate-700">Simple Edit</h4>
-                    <p className="text-xs text-slate-500">
-                      Generate a new scenario by applying income changes across years. You can tweak after
-                      creation.
-                    </p>
-                    <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 p-1 text-xs">
-                      <button
-                        type="button"
-                        className={`rounded-full px-3 py-1 font-medium transition ${
-                          simpleEditMode === "income"
-                            ? "bg-white text-slate-900 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                        }`}
-                        onClick={() => setSimpleEditMode("income")}
-                      >
-                        Income
-                      </button>
-                      <button
-                        type="button"
-                        className={`rounded-full px-3 py-1 font-medium transition ${
-                          simpleEditMode === "expenses"
-                            ? "bg-white text-slate-900 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                        }`}
-                        onClick={() => setSimpleEditMode("expenses")}
-                      >
-                        Expenses
-                      </button>
+                  <div className="space-y-4 px-5 py-5 text-sm text-slate-600">
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-700">Simple Edit</h4>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Apply quick changes across the timeline.
+                      </p>
                     </div>
-                    {simpleEditMode === "income" ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="label">Reduce Income Start</label>
-                          <NumberInput
-                            className="input"
-                            min={1}
-                            value={suggestion.reduceStartYear}
-                            onChange={(value) => setSuggestion((prev) => ({ ...prev, reduceStartYear: value }))}
-                          />
-                        </div>
-                        <div>
-                          <label className="label">Reduce Income End</label>
-                          <NumberInput
-                            className="input"
-                            min={1}
-                            value={suggestion.reduceEndYear}
-                            onChange={(value) => setSuggestion((prev) => ({ ...prev, reduceEndYear: value }))}
-                          />
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                      <div className="flex justify-center">
+                        <div className="flex w-full items-center justify-center rounded-full border border-slate-200 bg-white p-1 text-xs shadow-sm">
+                          <button
+                          type="button"
+                            className={`flex-1 rounded-full px-3 py-2 text-center font-medium transition ${
+                            simpleEditMode === "income"
+                              ? "bg-slate-900 text-white shadow-sm"
+                              : "text-slate-500 hover:text-slate-700"
+                          }`}
+                          onClick={() => setSimpleEditMode("income")}
+                        >
+                          Income
+                        </button>
+                          <button
+                          type="button"
+                            className={`flex-1 rounded-full px-3 py-2 text-center font-medium transition ${
+                            simpleEditMode === "expenses"
+                              ? "bg-slate-900 text-white shadow-sm"
+                              : "text-slate-500 hover:text-slate-700"
+                          }`}
+                          onClick={() => setSimpleEditMode("expenses")}
+                        >
+                          Expenses
+                        </button>
                         </div>
                       </div>
+                      {simpleEditMode === "income" && (
+                        <div className="mt-4 space-y-3">
+                          <div className="rounded-lg border border-slate-200 bg-white/70 p-3 space-y-3">
+                            {simpleEditIncomeRules.map((rule, index) => (
+                              <div key={rule.id} className="space-y-2">
+                                <div className="grid grid-cols-2 gap-3">
+                                  {index === 0 ? (
+                                    <div className="space-y-2">
+                                    <label className="label">Starting in Year</label>
+                                      <div className="input flex items-center text-slate-500">
+                                        Year 1
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                    <label className="label">Starting in Year</label>
+                                      <div className="relative group">
+                                        <NumberInput
+                                          className="input pr-10"
+                                          min={1}
+                                          value={rule.startYear}
+                                          onChange={(value) =>
+                                            setSimpleEditIncomeRules((prev) =>
+                                              prev.map((entry) =>
+                                                entry.id === rule.id
+                                                  ? { ...entry, startYear: value }
+                                                  : entry
+                                              )
+                                            )
+                                          }
+                                        />
+                                        <div className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-1 opacity-0 transition group-hover:opacity-100">
+                                          <button
+                                            type="button"
+                                            className="pointer-events-auto rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                                            onClick={() =>
+                                              setSimpleEditIncomeRules((prev) =>
+                                                prev.map((entry) =>
+                                                  entry.id === rule.id
+                                                    ? {
+                                                        ...entry,
+                                                        startYear: Math.max(1, entry.startYear + 1)
+                                                      }
+                                                    : entry
+                                                )
+                                              )
+                                            }
+                                            aria-label="Increase start year"
+                                          >
+                                            +
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="pointer-events-auto rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                                            onClick={() =>
+                                              setSimpleEditIncomeRules((prev) =>
+                                                prev.map((entry) =>
+                                                  entry.id === rule.id
+                                                    ? {
+                                                        ...entry,
+                                                        startYear: Math.max(1, entry.startYear - 1)
+                                                      }
+                                                    : entry
+                                                )
+                                              )
+                                            }
+                                            aria-label="Decrease start year"
+                                          >
+                                            −
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="space-y-2">
+                                    <label className="label">
+                                      {index === 0 ? "Starting Income" : "Income Value"}
+                                    </label>
+                                    <CurrencyInput
+                                      className="input"
+                                      min={0}
+                                      value={rule.incomeValue}
+                                      placeholder="Enter amount"
+                                      onChange={(value) => {
+                                        setSimpleEditIncomeRules((prev) =>
+                                          prev.map((entry) =>
+                                            entry.id === rule.id
+                                              ? { ...entry, incomeValue: value }
+                                              : entry
+                                          )
+                                        );
+                                        if (index === 0) {
+                                          setSimpleEditIncomeBaseEdited(true);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              className="text-left text-xs font-semibold text-slate-500 transition hover:text-slate-900"
+                              onClick={() =>
+                                setSimpleEditIncomeRules((prev) => {
+                                  const lastStart = prev[prev.length - 1]?.startYear ?? 1;
+                                  return [
+                                    ...prev,
+                                    {
+                                      id: createId(),
+                                      startYear: lastStart + 1,
+                                      incomeValue: null
+                                    }
+                                  ];
+                                })
+                              }
+                            >
+                              {simpleEditIncomeRules.length > 0 ? "+ Add another rule" : "+ Add a rule"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {simpleEditMode === "expenses" && (
+                        <div className="mt-4 space-y-3">
+                          <div className="rounded-lg border border-slate-200 bg-white/70 p-3 space-y-3">
+                            {simpleEditExpenseRules.map((rule, index) => (
+                              <div key={rule.id} className="space-y-2">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="space-y-2">
+                                    <label className="label">Starting in Year</label>
+                                  <div className="relative group">
+                                    <NumberInput
+                                      className="input pr-10"
+                                      min={1}
+                                      value={rule.startYear}
+                                      onChange={(value) =>
+                                        setSimpleEditExpenseRules((prev) =>
+                                          prev.map((entry) =>
+                                            entry.id === rule.id
+                                              ? { ...entry, startYear: value }
+                                              : entry
+                                          )
+                                        )
+                                      }
+                                    />
+                                    <div className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 flex-col gap-1 opacity-0 transition group-hover:opacity-100">
+                                      <button
+                                        type="button"
+                                        className="pointer-events-auto rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                                        onClick={() =>
+                                          setSimpleEditExpenseRules((prev) =>
+                                            prev.map((entry) =>
+                                              entry.id === rule.id
+                                                ? {
+                                                    ...entry,
+                                                    startYear: Math.max(1, entry.startYear + 1)
+                                                  }
+                                                : entry
+                                            )
+                                          )
+                                        }
+                                        aria-label="Increase start year"
+                                      >
+                                        +
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="pointer-events-auto rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
+                                        onClick={() =>
+                                          setSimpleEditExpenseRules((prev) =>
+                                            prev.map((entry) =>
+                                              entry.id === rule.id
+                                                ? {
+                                                    ...entry,
+                                                    startYear: Math.max(1, entry.startYear - 1)
+                                                  }
+                                                : entry
+                                            )
+                                          )
+                                        }
+                                        aria-label="Decrease start year"
+                                      >
+                                        −
+                                      </button>
+                                    </div>
+                                  </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="label">Expense Value</label>
+                                    <CurrencyInput
+                                      className="input"
+                                      min={0}
+                                      value={rule.expenseValue}
+                                      placeholder="Enter amount"
+                                      onChange={(value) =>
+                                        setSimpleEditExpenseRules((prev) =>
+                                          prev.map((entry) =>
+                                            entry.id === rule.id
+                                              ? { ...entry, expenseValue: value }
+                                              : entry
+                                          )
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              className="text-left text-xs font-semibold text-slate-500 transition hover:text-slate-900"
+                              onClick={() =>
+                                setSimpleEditExpenseRules((prev) => {
+                                  const lastStart = prev[prev.length - 1]?.startYear ?? 1;
+                                  return [
+                                    ...prev,
+                                    {
+                                      id: createId(),
+                                      startYear: lastStart + 1,
+                                      expenseValue: null
+                                    }
+                                  ];
+                                })
+                              }
+                            >
+                              {simpleEditExpenseRules.length > 0 ? "+ Add another rule" : "+ Add a rule"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {simpleEditMode === "income" ? (
+                      <>
+                        
+                      </>
                     ) : (
                       <>
-                        <div>
-                          <label className="label">Starting Annual Expenses</label>
-                          <CurrencyInput
-                            className="input"
-                            min={0}
-                            value={simpleEditExpenseBase}
-                            onChange={(value) => {
-                              setSimpleEditExpenseBase(value);
-                              setSimpleEditExpenseBaseEdited(true);
-                            }}
-                          />
-                        </div>
                         <div className="py-2">
                           <label className="flex items-center gap-2 text-xs text-slate-500">
                             <input
@@ -1288,135 +1521,13 @@ export default function HomePage() {
                             over time
                           </label>
                         </div>
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                          <div className="flex items-center justify-between">
-                            <button
-                              type="button"
-                              className="group inline-flex items-center gap-2 text-left text-xs font-semibold text-slate-600 transition hover:text-slate-900"
-                              onClick={() => setSimpleEditReduceExpenses((prev) => !prev)}
-                            >
-                              <svg
-                                aria-hidden="true"
-                                viewBox="0 0 20 20"
-                                className={`h-3 w-3 text-slate-500 transition-transform group-hover:text-slate-700 ${
-                                  simpleEditReduceExpenses ? "rotate-180" : ""
-                                }`}
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.38a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              Change expected expenses based on year
-                            </button>
-                            <button
-                              type="button"
-                              className="text-xs font-semibold text-slate-500 transition hover:text-slate-900"
-                              onClick={() => setSimpleEditReduceExpenses((prev) => !prev)}
-                            >
-                              {simpleEditReduceExpenses ? "Hide" : "Add"}
-                            </button>
-                          </div>
-                          <p className="mt-1 text-[11px] text-slate-400">
-                            From the start year, your expense value is projected forward.
-                          </p>
-                          {simpleEditReduceExpenses && (
-                            <div className="mt-3 space-y-3">
-                              {simpleEditExpenseRules.map((rule, index) => (
-                                <div key={rule.id} className="space-y-2">
-                                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                    Rule {index + 1}
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                      <label className="label">Start Year</label>
-                                      <NumberInput
-                                        className="input"
-                                        min={1}
-                                        value={rule.startYear}
-                                        onChange={(value) =>
-                                          setSimpleEditExpenseRules((prev) =>
-                                            prev.map((entry) =>
-                                              entry.id === rule.id
-                                                ? { ...entry, startYear: value }
-                                                : entry
-                                            )
-                                          )
-                                        }
-                                      />
-                                    </div>
-                                    <div>
-                                      <label className="label">Expense Value</label>
-                                      <CurrencyInput
-                                        className="input"
-                                        min={0}
-                                        value={rule.expenseValue}
-                                        placeholder="Enter amount"
-                                        onChange={(value) =>
-                                          setSimpleEditExpenseRules((prev) =>
-                                            prev.map((entry) =>
-                                              entry.id === rule.id
-                                                ? { ...entry, expenseValue: value }
-                                                : entry
-                                            )
-                                          )
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                              {simpleEditExpenseRules.length > 0 && (
-                                <button
-                                  type="button"
-                                  className="text-left text-xs font-semibold text-slate-500 transition hover:text-slate-900"
-                                  onClick={() =>
-                                    setSimpleEditExpenseRules((prev) => {
-                                      const lastStart = prev[prev.length - 1]?.startYear ?? 1;
-                                      return [
-                                        ...prev,
-                                        {
-                                          id: createId(),
-                                          startYear: lastStart + 1,
-                                          expenseValue: null
-                                        }
-                                      ];
-                                    })
-                                  }
-                                >
-                                  + Add another rule
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
                       </>
                     )}
-                    {simpleEditMode === "income" && (
-                      <PercentInput
-                        label="Income Multiplier"
-                        value={suggestion.reduceMultiplier}
-                        onChange={(value) => setSuggestion((prev) => ({ ...prev, reduceMultiplier: value }))}
-                        max={1}
-                        step={0.01}
-                      />
-                    )}
-                    {simpleEditMode === "income" && (
-                      <div>
-                        <label className="label">Zero Income After Year</label>
-                        <NumberInput
-                          className="input"
-                          min={1}
-                          value={suggestion.zeroIncomeAfterYear}
-                          onChange={(value) => setSuggestion((prev) => ({ ...prev, zeroIncomeAfterYear: value }))}
-                        />
-                      </div>
-                    )}
-                    <button className="button button-primary w-full" onClick={handleCreateSuggestedScenario}>
-                      Apply
-                    </button>
+                    <div className="flex justify-end">
+                      <button className="button button-primary w-full sm:w-auto" onClick={handleCreateSuggestedScenario}>
+                        Apply
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1428,7 +1539,7 @@ export default function HomePage() {
                           Base Income
                         </p>
                         <div className="mt-2 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                          <div>
+                          <div className="space-y-2">
                             <label className="label">Base Annual Work Income</label>
                             <NumberInput
                               className="input"
@@ -1515,7 +1626,7 @@ export default function HomePage() {
                               </button>
                             </div>
                             <div className="mt-4 grid grid-cols-2 gap-3">
-                              <div>
+                              <div className="space-y-2">
                                 <label className="label">Start Year</label>
                                 <NumberInput
                                   className="input"
@@ -1526,7 +1637,7 @@ export default function HomePage() {
                                   }
                                 />
                               </div>
-                              <div>
+                              <div className="space-y-2">
                                 <label className="label">End Year</label>
                                 <NumberInput
                                   className="input"
@@ -1537,7 +1648,7 @@ export default function HomePage() {
                                   }
                                 />
                               </div>
-                              <div>
+                              <div className="space-y-2">
                                 <label className="label">Annual Work Income</label>
                                 <NumberInput
                                   className="input"
@@ -1549,7 +1660,7 @@ export default function HomePage() {
                                   }
                                 />
                               </div>
-                              <div>
+                              <div className="space-y-2">
                                 <label className="label">Annual Expenses</label>
                                 <NumberInput
                                   className="input"
@@ -1571,8 +1682,8 @@ export default function HomePage() {
               <div className="card flex h-full flex-col">
                 <div className="px-5 pt-5">
                   <h4 className="text-sm font-semibold text-slate-700">Income & Spending Over Time</h4>
-                  <p className="mt-1 text-xs text-slate-500">
-                    Live view of how this scenario changes yearly income and expenses.
+                  <p className="mt-1 text-sm text-slate-500">
+                    Year-by-year view of income and expenses for this plan.
                   </p>
                 </div>
                 <div className="mt-4 flex-1 overflow-auto px-5 pb-5">
@@ -1581,8 +1692,8 @@ export default function HomePage() {
                       <thead className="sticky top-0 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-400">
                         <tr>
                           <th className="px-3 py-2">Year</th>
-                          <th className="px-3 py-2">Work Income</th>
-                          <th className="px-3 py-2">Expenses</th>
+                          <th className="px-3 py-2 text-right">Work Income</th>
+                          <th className="px-3 py-2 text-right">Expenses</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1626,10 +1737,13 @@ export default function HomePage() {
                                     )
                                   }
                                 >
+                                  <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                                    $
+                                  </span>
                                   <input
-                                    className="w-full bg-transparent pr-4 text-right text-xs text-slate-700 focus:outline-none"
+                                    className="w-full bg-transparent pl-4 pr-4 text-right text-xs text-slate-700 focus:outline-none"
                                     inputMode="numeric"
-                                    value={tableEdits[incomeKey] ?? String(row.workIncome)}
+                                    value={tableEdits[incomeKey] ?? row.workIncome.toLocaleString("en-US")}
                                     onChange={(event) =>
                                       setTableEdits((prev) => ({
                                         ...prev,
@@ -1689,10 +1803,13 @@ export default function HomePage() {
                                     )
                                   }
                                 >
+                                  <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                                    $
+                                  </span>
                                   <input
-                                    className="w-full bg-transparent pr-4 text-right text-xs text-slate-700 focus:outline-none"
+                                    className="w-full bg-transparent pl-4 pr-4 text-right text-xs text-slate-700 focus:outline-none"
                                     inputMode="numeric"
-                                    value={tableEdits[expensesKey] ?? String(row.expenses)}
+                                    value={tableEdits[expensesKey] ?? row.expenses.toLocaleString("en-US")}
                                     onChange={(event) =>
                                       setTableEdits((prev) => ({
                                         ...prev,

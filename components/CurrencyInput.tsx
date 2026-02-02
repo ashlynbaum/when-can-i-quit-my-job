@@ -47,7 +47,7 @@ export function CurrencyInput({
           min={min}
           max={max}
           placeholder={placeholder}
-          className={`${className} pl-7`}
+          className={`${className} !pl-7`}
         />
       </div>
     </div>

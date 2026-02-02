@@ -14,17 +14,19 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="px-6 py-4 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
+    <nav className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 px-6 py-3">
       <div className="mx-auto w-full max-w-6xl">
-        <div className="flex items-center justify-end gap-6 text-sm">
+        <div className="flex items-center justify-end gap-7 text-sm">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-slate-600 transition hover:text-slate-900 ${
-                  isActive ? "underline decoration-2 underline-offset-4 decoration-slate-900" : ""
+                className={`relative text-slate-600 transition-colors hover:text-slate-900 ${
+                  isActive ? "font-semibold text-slate-700" : ""
+                } after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-slate-700 after:transition-transform after:duration-200 hover:after:scale-x-100 ${
+                  isActive ? "after:scale-x-100" : ""
                 }`}
               >
                 {link.label}
