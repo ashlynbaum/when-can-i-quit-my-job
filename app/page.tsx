@@ -930,7 +930,7 @@ export default function HomePage() {
                 </span>
               </div>
               <div className="flex flex-col gap-2">
-                <h1 className="font-domine text-4xl font-semibold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent sm:text-5xl leading-tight pb-2">
+                <h1 className="font-domine text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent sm:text-5xl leading-tight pb-2">
                   When can I quit my job
                 </h1>
                 <p className="mx-auto max-w-md text-sm text-slate-600 sm:text-base">
@@ -986,14 +986,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col md:flex-row">
+      <div className="flex flex-1 flex-col md:flex-row md:relative">
         <div
           id="inputs"
-          className={`w-full bg-white border-b border-slate-200 md:border-b-0 md:w-auto md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden ${
-            sidebarOpen ? "md:shadow-none" : "md:w-10"
+          className={`w-full bg-white md:bg-gradient-to-br md:from-slate-50 md:via-blue-50/30 md:to-purple-50/20 border-b border-slate-200 md:border-b-0 md:w-auto md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden transition-all duration-300 ease-in-out ${
+            sidebarOpen ? "md:shadow-none" : "md:w-0"
           }`}
           style={
-            sidebarOpen
+            sidebarOpen && typeof window !== 'undefined' && window.innerWidth >= 768
               ? { width: `clamp(240px, ${sidebarWidth}px, 480px)` }
               : undefined
           }
@@ -1007,8 +1007,8 @@ export default function HomePage() {
               onReset={handleReset}
             />
           </div>
-          <div className="hidden md:block">
-            {sidebarOpen ? (
+          <div className="hidden md:block h-full">
+            <div className={`h-full transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               <Sidebar
                 inputs={inputs}
                 isOpen={sidebarOpen}
@@ -1016,23 +1016,7 @@ export default function HomePage() {
                 onUpdateInputs={setInputs}
                 onReset={handleReset}
               />
-            ) : (
-              <div className="flex h-full items-start justify-center bg-slate-50 pl-6 pr-5 pt-4 transition-opacity duration-300 ease-in-out">
-                <button
-                  className="rounded-md border border-slate-200 bg-white px-2 py-2 pl-3 text-slate-500 transition -translate-x-2 hover:border-slate-300 hover:text-slate-900"
-                  onClick={() => setSidebarOpen(true)}
-                  aria-label="Open sidebar"
-                >
-                  <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M7.22 15.78a.75.75 0 0 1 0-1.06L11.44 10 7.22 5.78a.75.75 0 1 1 1.06-1.06l4.75 4.75c.3.3.3.77 0 1.06l-4.75 4.75a.75.75 0 0 1-1.06 0Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
+            </div>
           </div>
           {sidebarOpen && (
             <div
@@ -1044,7 +1028,23 @@ export default function HomePage() {
           )}
         </div>
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6">
+        {!sidebarOpen && (
+          <button
+            className="hidden md:flex absolute -left-2.5 top-6 z-50 rounded-r-md border border-slate-200 bg-white py-3 pl-5 pr-3 text-slate-500 shadow-lg transition-all duration-200 hover:translate-x-1 hover:border-slate-300 hover:text-slate-900 hover:shadow-xl"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open sidebar"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor">
+              <path
+                fillRule="evenodd"
+                d="M7.22 15.78a.75.75 0 0 1 0-1.06L11.44 10 7.22 5.78a.75.75 0 1 1 1.06-1.06l4.75 4.75c.3.3.3.77 0 1.06l-4.75 4.75a.75.75 0 0 1-1.06 0Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        )}
+
+        <main className={`min-w-0 flex-1 p-4 sm:p-6 transition-all duration-300 ${!sidebarOpen ? 'md:pl-16' : ''}`}>
           <div className="mx-auto w-full max-w-6xl">
             <div className="space-y-6">
               <section className="card" id="results">

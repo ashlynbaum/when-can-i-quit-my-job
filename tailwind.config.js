@@ -3,6 +3,9 @@ module.exports = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        domine: ["var(--font-domine)"]
+      },
       colors: {
         slate: {
           950: "#0b0f1a"

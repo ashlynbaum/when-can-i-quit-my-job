@@ -25,7 +25,7 @@ export function Sidebar({
 
   return (
     <aside
-      className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-slate-200 bg-white px-5 py-6 md:border-r"
+      className="flex h-full flex-col gap-6 overflow-x-hidden overflow-y-auto border-slate-200 bg-white md:bg-transparent px-5 py-6 md:border-r"
       data-sidebar
     >
       <div className="flex items-start justify-between gap-3">

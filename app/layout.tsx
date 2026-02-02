@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
+import { Domine } from "next/font/google";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import "./globals.css";
+
+const domine = Domine({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-domine",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "When Can I Quit My Job",
@@ -24,8 +33,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={domine.variable}>
       <body>
+        <GoogleAnalytics />
         <Navbar />
         {children}
         <Footer />
