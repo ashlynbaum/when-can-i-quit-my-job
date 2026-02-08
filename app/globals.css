@@ -53,3 +53,17 @@ body {
 .fill-handle {
   @apply absolute right-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 cursor-ns-resize rounded-sm border border-slate-300 bg-white shadow-sm opacity-70 transition hover:opacity-100;
 }
+
+.sidebar-shell {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .sidebar-shell[data-open="true"] {
+    width: clamp(240px, var(--sidebar-width, 360px), 480px);
+  }
+
+  .sidebar-shell[data-open="false"] {
+    width: 0;
+  }
+}

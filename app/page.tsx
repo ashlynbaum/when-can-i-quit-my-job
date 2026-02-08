@@ -989,14 +989,11 @@ export default function HomePage() {
       <div className="flex flex-1 flex-col md:flex-row md:relative">
         <div
           id="inputs"
-          className={`w-full bg-white md:bg-gradient-to-br md:from-slate-50 md:via-blue-50/30 md:to-purple-50/20 border-b border-slate-200 md:border-b-0 md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`sidebar-shell w-full bg-white md:bg-gradient-to-br md:from-slate-50 md:via-blue-50/30 md:to-purple-50/20 border-b border-slate-200 md:border-b-0 md:sticky md:top-0 md:h-screen md:shrink-0 md:overflow-hidden transition-all duration-300 ease-in-out ${
             sidebarOpen ? "md:shadow-none" : "md:w-0 md:min-w-0"
           }`}
-          style={
-            sidebarOpen && typeof window !== 'undefined' && window.innerWidth >= 768
-              ? { width: `clamp(240px, ${sidebarWidth}px, 480px)` }
-              : { width: sidebarOpen ? undefined : '0px' }
-          }
+          style={{ ["--sidebar-width" as string]: `${sidebarWidth}px` }}
+          data-open={sidebarOpen}
         >
           <div className="md:hidden max-h-screen overflow-y-auto">
             <Sidebar
